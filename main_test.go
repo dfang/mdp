@@ -136,3 +136,33 @@ func TestListWithoutBlankLine(t *testing.T) {
 		t.Errorf("expected unordered list in output, got %s", html)
 	}
 }
+
+func TestGFMFeatures(t *testing.T) {
+	input := []byte(`
+# GFM Test
+
+- [ ] 未完成任务
+- [x] 已完成任务
+
+| 列 1 | 列 2 |
+| :--- | :--- |
+| 值 1 | 值 2 |
+
+~~删除线文本~~
+`)
+	output, err := parseContent(input, "")
+	if err != nil {
+		t.Fatalf("parseContent failed: %v", err)
+	}
+	html := string(output)
+	if !strings.Contains(html, `type="checkbox"`) {
+		t.Errorf("expected task list checkbox in output, got %s", html)
+	}
+	if !strings.Contains(html, `<table>`) || !strings.Contains(html, `<th>列 1</th>`) {
+		t.Errorf("expected table in output, got %s", html)
+	}
+	if !strings.Contains(html, `<del>删除线文本</del>`) {
+		t.Errorf("expected strikethrough in output, got %s", html)
+	}
+}
+

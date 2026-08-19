@@ -15,9 +15,14 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/russross/blackfriday/v2"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 //go:embed templates/*
@@ -58,6 +63,10 @@ const (
       }
       li > ul, li > ol {
         margin: 0.2em 0;
+      }
+      input[type="checkbox"] {
+        margin-right: 0.35em;
+        vertical-align: middle;
       }
     </style>
   </head>
@@ -272,12 +281,77 @@ func run(filename, tFname string, out io.Writer) error {
 	return preview(outName)
 }
 
+var markdownConverter = goldmark.New(
+	goldmark.WithExtensions(
+		extension.GFM,
+		extension.DefinitionList,
+		extension.Footnote,
+	),
+	goldmark.WithParserOptions(
+		parser.WithAutoHeadingID(),
+		parser.WithAttribute(),
+	),
+	goldmark.WithRendererOptions(
+		html.WithUnsafe(),
+	),
+)
+
+type unicodeIDs struct {
+	values map[string]bool
+}
+
+func newUnicodeIDs() parser.IDs {
+	return &unicodeIDs{values: make(map[string]bool)}
+}
+
+func sanitizeAnchorName(text string) string {
+	var b strings.Builder
+	lastDash := true
+	for _, r := range text {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			b.WriteRune(unicode.ToLower(r))
+			lastDash = false
+		} else if !lastDash {
+			b.WriteRune('-')
+			lastDash = true
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}
+
+func (s *unicodeIDs) Generate(value []byte, kind ast.NodeKind) []byte {
+	id := sanitizeAnchorName(string(value))
+	if id == "" {
+		id = "section"
+	}
+	base := id
+	count := 1
+	for s.values[id] {
+		id = fmt.Sprintf("%s-%d", base, count)
+		count++
+	}
+	s.values[id] = true
+	return []byte(id)
+}
+
+func (s *unicodeIDs) Put(value []byte) {
+	s.values[string(value)] = true
+}
+
 func parseContent(input []byte, tFname string) ([]byte, error) {
-	output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.AutoHeadingIDs|blackfriday.NoEmptyLineBeforeBlock))
+	pc := parser.NewContext(parser.WithIDs(newUnicodeIDs()))
+	var outBuf bytes.Buffer
+	if err := markdownConverter.Convert(input, &outBuf, parser.WithContext(pc)); err != nil {
+		return nil, err
+	}
 
 	policy := bluemonday.UGCPolicy()
-	policy.AllowAttrs("id").Matching(idRegex).OnElements("h1", "h2", "h3", "h4", "h5", "h6", "a")
-	body := policy.SanitizeBytes(output)
+	policy.AllowAttrs("id").Matching(idRegex).OnElements("h1", "h2", "h3", "h4", "h5", "h6", "a", "section", "div", "span")
+	policy.AllowElements("input")
+	policy.AllowAttrs("type").Matching(regexp.MustCompile(`^checkbox$`)).OnElements("input")
+	policy.AllowAttrs("checked", "disabled").OnElements("input")
+	policy.AllowAttrs("class").OnElements("li", "ul", "ol", "div", "span", "table", "pre", "code")
+	body := policy.SanitizeBytes(outBuf.Bytes())
 
 	var t *template.Template
 	var err error
