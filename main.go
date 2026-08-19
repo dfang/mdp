@@ -41,6 +41,24 @@ const (
       html {
         scroll-behavior: smooth;
       }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #24292e;
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 32px 20px;
+      }
+      ul, ol {
+        padding-left: 2em;
+        margin: 0.8em 0;
+      }
+      li {
+        margin: 0.3em 0;
+      }
+      li > ul, li > ol {
+        margin: 0.2em 0;
+      }
     </style>
   </head>
   <body>
@@ -255,7 +273,7 @@ func run(filename, tFname string, out io.Writer) error {
 }
 
 func parseContent(input []byte, tFname string) ([]byte, error) {
-	output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.AutoHeadingIDs))
+	output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.AutoHeadingIDs|blackfriday.NoEmptyLineBeforeBlock))
 
 	policy := bluemonday.UGCPolicy()
 	policy.AllowAttrs("id").Matching(idRegex).OnElements("h1", "h2", "h3", "h4", "h5", "h6", "a")

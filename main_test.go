@@ -124,3 +124,15 @@ func TestPrintVersion(t *testing.T) {
 		t.Errorf("expected output to contain commit and date info, got %q", output)
 	}
 }
+
+func TestListWithoutBlankLine(t *testing.T) {
+	input := []byte("业务概念：\n- 项目生命周期 (Projects)\n- 阶段推进 (Stages)")
+	output, err := parseContent(input, "")
+	if err != nil {
+		t.Fatalf("parseContent failed: %v", err)
+	}
+	html := string(output)
+	if !strings.Contains(html, "<ul>") || !strings.Contains(html, "<li>项目生命周期") {
+		t.Errorf("expected unordered list in output, got %s", html)
+	}
+}
