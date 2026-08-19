@@ -1,3 +1,13 @@
+## [0.0.5] - 2026-08-19
+
+### 🚀 Features
+
+- Add Mermaid diagram rendering and dark mode support across all templates
+
+### 📚 Documentation
+
+- Update CHANGELOG.md for v0.0.5
+
 ## [0.0.4] - 2026-08-19
 
 ### 🚀 Features
@@ -15,6 +25,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Ignore worktree directories in .gitignore
+- Print GOBIN in install recipe
 ## [0.0.3] - 2026-08-19
 
 ### 🐛 Bug Fixes
