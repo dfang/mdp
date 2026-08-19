@@ -320,6 +320,38 @@
         }
       });
 
+      // Mermaid diagrams
+      var mermaidBlocks = [];
+      document.querySelectorAll("pre code.language-mermaid, pre.language-mermaid code").forEach(function(codeEl) {
+        var pre = codeEl.closest("pre");
+        var container = document.createElement("div");
+        container.className = "mermaid";
+        container.setAttribute("data-mermaid-src", codeEl.textContent);
+        container.style.textAlign = "center";
+        container.style.margin = "24px 0";
+        container.style.overflowX = "auto";
+        pre.parentNode.replaceChild(container, pre);
+        mermaidBlocks.push(container);
+      });
+
+      if (typeof mermaid !== "undefined" && mermaidBlocks.length > 0) {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: "dark",
+          securityLevel: "loose"
+        });
+        mermaidBlocks.forEach(function(el, index) {
+          var code = el.getAttribute("data-mermaid-src");
+          if (!code) return;
+          var id = "mermaid-svg-" + index + "-" + Math.floor(Math.random() * 10000);
+          mermaid.render(id, code).then(function(result) {
+            el.innerHTML = result.svg;
+          }).catch(function(err) {
+            console.warn("Mermaid render error:", err);
+          });
+        });
+      }
+
       // Code copy button
       document.querySelectorAll("pre").forEach(function(pre) {
         var wrapper = document.createElement("div");
@@ -379,5 +411,6 @@
       });
     });
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </body>
 </html>
