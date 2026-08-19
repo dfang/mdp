@@ -37,6 +37,7 @@ go install github.com/dfang/mdp@latest
 ```text
 Usage: mdp [options] <markdown_file>
        mdp templates
+       mdp version
 
 Options:
   -l, -list
@@ -45,6 +46,8 @@ Options:
         Use a random built-in template
   -t string
         Alternate template name or custom template file
+  -v, -version
+        Show version information
 ```
 
 ---

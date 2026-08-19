@@ -30,7 +30,15 @@ install:
 changelog:
     git-cliff -o CHANGELOG.md
 
+# Check goreleaser configuration
+goreleaser-check:
+    goreleaser check
+
+# Build release snapshot locally with goreleaser
+snapshot:
+    goreleaser release --snapshot --clean
+
 # Clean build artifacts
 clean:
-    rm -rf bin/ mdp
+    rm -rf bin/ mdp dist/
 

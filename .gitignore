@@ -11,5 +11,6 @@ bin/
 .DS_Store
 tmp/
 bin/
+dist/
 .agents/
 

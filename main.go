@@ -23,6 +23,12 @@ import (
 //go:embed templates/*
 var templateFS embed.FS
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 var idRegex = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Pd}\p{Pc}_.:-]+$`)
 
 const (
@@ -152,9 +158,16 @@ func printTemplates(out io.Writer) error {
 	return nil
 }
 
+func printVersion(out io.Writer) {
+	fmt.Fprintf(out, "mdp %s (commit: %s, date: %s)\n", version, commit, date)
+}
+
 func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
+		case "version", "-v", "--version":
+			printVersion(os.Stdout)
+			return
 		case "templates", "list", "list-templates":
 			if err := printTemplates(os.Stdout); err != nil {
 				fmt.Fprintln(os.Stderr, err)
@@ -169,14 +182,22 @@ func main() {
 	flag.BoolVar(randomTmpl, "random", false, "Use a random built-in template")
 	listTmpl := flag.Bool("l", false, "List available built-in templates")
 	flag.BoolVar(listTmpl, "list", false, "List available built-in templates")
+	showVersion := flag.Bool("v", false, "Show version information")
+	flag.BoolVar(showVersion, "version", false, "Show version information")
 
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [options] <markdown_file>\n", os.Args[0])
-		fmt.Fprintf(flag.CommandLine.Output(), "       %s templates\n\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "       %s templates\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "       %s version\n\n", os.Args[0])
 		fmt.Fprintf(flag.CommandLine.Output(), "Options:\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	if *showVersion {
+		printVersion(os.Stdout)
+		return
+	}
 
 	if *listTmpl {
 		if err := printTemplates(os.Stdout); err != nil {

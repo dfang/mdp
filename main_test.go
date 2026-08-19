@@ -112,3 +112,15 @@ func TestRun(t *testing.T) {
 		t.Errorf("expected output to contain %q, got %q", expectedName, out.String())
 	}
 }
+
+func TestPrintVersion(t *testing.T) {
+	var buf bytes.Buffer
+	printVersion(&buf)
+	output := buf.String()
+	if !strings.HasPrefix(output, "mdp ") {
+		t.Errorf("expected output to start with 'mdp ', got %q", output)
+	}
+	if !strings.Contains(output, "commit:") || !strings.Contains(output, "date:") {
+		t.Errorf("expected output to contain commit and date info, got %q", output)
+	}
+}
