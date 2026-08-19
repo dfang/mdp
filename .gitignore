@@ -1,0 +1,14 @@
+*.vim
+
+# binaries
+wc
+mdp
+bin/
+
+# mocks
+.todo.json
+
+.DS_Store
+tmp/
+bin/
+
