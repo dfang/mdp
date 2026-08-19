@@ -2,18 +2,26 @@ package main
 
 import (
 	"bytes"
+	"embed"
 	"flag"
 	"fmt"
 	"html/template"
 	"io"
+	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"runtime"
+	"strings"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
 )
+
+//go:embed templates/*
+var templateFS embed.FS
 
 var idRegex = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Pd}\p{Pc}_.:-]+$`)
 
@@ -88,13 +96,95 @@ type content struct {
 	Body  template.HTML
 }
 
+func listBuiltinTemplates() ([]string, error) {
+	entries, err := templateFS.ReadDir("templates")
+	if err != nil {
+		return nil, err
+	}
+	var names []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".html.tmpl") {
+			name := strings.TrimSuffix(entry.Name(), ".html.tmpl")
+			names = append(names, name)
+		}
+	}
+	return names, nil
+}
+
+func getRandomTemplate() (string, error) {
+	names, err := listBuiltinTemplates()
+	if err != nil {
+		return "", err
+	}
+	if len(names) == 0 {
+		return "", fmt.Errorf("no built-in templates found")
+	}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return names[r.Intn(len(names))], nil
+}
+
+var templateDescriptions = map[string]string{
+	"academic":       "Academic paper style with serif typography and centered title",
+	"dark_modern":    "Futuristic dark glassmorphic UI with neon gradient glows",
+	"dracula":        "Iconic Dracula dark theme with purple, pink, and cyan accents",
+	"github":         "GitHub Markdown style with auto/manual light & dark mode",
+	"newsprint":      "Warm ivory newsprint / editorial paper reading style",
+	"nord":           "Arctic bluish-gray Nord theme with light & dark mode",
+	"notion":         "Notion minimalistic notebook style with light & dark mode",
+	"solarized_dark": "Classic Solarized palette with light & dark mode",
+	"vitepress":      "VitePress / Vue modern tech docs style with light & dark mode",
+}
+
+func printTemplates(out io.Writer) error {
+	names, err := listBuiltinTemplates()
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(out, "Available built-in templates:")
+	for _, name := range names {
+		desc := templateDescriptions[name]
+		if desc != "" {
+			fmt.Fprintf(out, "  - %-15s : %s\n", name, desc)
+		} else {
+			fmt.Fprintf(out, "  - %s\n", name)
+		}
+	}
+	return nil
+}
+
 func main() {
-	tFname := flag.String("t", "", "Alternate template name")
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "templates", "list", "list-templates":
+			if err := printTemplates(os.Stdout); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			return
+		}
+	}
+
+	tFname := flag.String("t", "", "Alternate template name or custom template file")
+	randomTmpl := flag.Bool("r", false, "Use a random built-in template")
+	flag.BoolVar(randomTmpl, "random", false, "Use a random built-in template")
+	listTmpl := flag.Bool("l", false, "List available built-in templates")
+	flag.BoolVar(listTmpl, "list", false, "List available built-in templates")
+
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [options] <markdown_file>\n\nOptions:\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [options] <markdown_file>\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "       %s templates\n\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "Options:\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	if *listTmpl {
+		if err := printTemplates(os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 
 	if flag.NArg() < 1 {
 		flag.Usage()
@@ -102,8 +192,12 @@ func main() {
 	}
 
 	filename := flag.Arg(0)
+	templateName := *tFname
+	if *randomTmpl {
+		templateName = "random"
+	}
 
-	if err := run(filename, *tFname, os.Stdout); err != nil {
+	if err := run(filename, templateName, os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -120,15 +214,16 @@ func run(filename, tFname string, out io.Writer) error {
 		return err
 	}
 
-	temp, err := os.CreateTemp("", "mdp*.html")
-	if err != nil {
-		return err
-	}
-	if err := temp.Close(); err != nil {
-		return err
+	base := filepath.Base(filename)
+	ext := filepath.Ext(base)
+	nameOnly := strings.TrimSuffix(base, ext)
+
+	tmpDir := "/tmp"
+	if runtime.GOOS == "windows" {
+		tmpDir = os.TempDir()
 	}
 
-	outName := temp.Name()
+	outName := filepath.Join(tmpDir, fmt.Sprintf("mdp_%s.html", nameOnly))
 	fmt.Fprintln(out, outName)
 
 	if err := os.WriteFile(outName, htmlData, 0644); err != nil {
@@ -145,16 +240,35 @@ func parseContent(input []byte, tFname string) ([]byte, error) {
 	policy.AllowAttrs("id").Matching(idRegex).OnElements("h1", "h2", "h3", "h4", "h5", "h6", "a")
 	body := policy.SanitizeBytes(output)
 
-	t, err := template.New("mdp").Parse(defaultTemplate)
-	if err != nil {
-		return nil, err
-	}
+	var t *template.Template
+	var err error
 
-	if tFname != "" {
-		t, err = template.ParseFiles(tFname)
+	if tFname == "random" {
+		selected, err := getRandomTemplate()
 		if err != nil {
 			return nil, err
 		}
+		tFname = selected
+	}
+
+	if tFname == "" {
+		t, err = template.New("mdp").Parse(defaultTemplate)
+	} else if _, statErr := os.Stat(tFname); statErr == nil {
+		t, err = template.ParseFiles(tFname)
+	} else {
+		tmplName := tFname
+		if !strings.HasSuffix(tmplName, ".html.tmpl") {
+			tmplName += ".html.tmpl"
+		}
+		embedPath := filepath.Join("templates", filepath.Base(tmplName))
+		if _, readErr := templateFS.ReadFile(embedPath); readErr == nil {
+			t, err = template.ParseFS(templateFS, embedPath)
+		} else {
+			return nil, fmt.Errorf("template %q not found (neither local file nor built-in template)", tFname)
+		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	c := content{

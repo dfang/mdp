@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Title }}</title>
+  <style>
+    :root {
+      --vp-c-bg: #ffffff;
+      --vp-c-bg-soft: #f6f6f7;
+      --vp-c-bg-mute: #f1f1f2;
+      --vp-c-text-1: #213547;
+      --vp-c-text-2: #476582;
+      --vp-c-text-3: #8a9ba8;
+      --vp-c-brand: #10b981;
+      --vp-c-brand-light: #34d399;
+      --vp-c-brand-dark: #059669;
+      --vp-c-border: #e2e2e3;
+      --vp-c-divider: rgba(60, 60, 67, 0.12);
+      --vp-code-bg: #f6f6f7;
+      --vp-code-inline-bg: rgba(16, 185, 129, 0.08);
+      --vp-code-inline-fg: #059669;
+      --copy-btn-bg: rgba(255, 255, 255, 0.85);
+      --copy-btn-fg: #476582;
+      --copy-btn-border: #e2e2e3;
+      --float-btn-bg: #ffffff;
+      --float-btn-fg: #10b981;
+      --float-btn-border: #e2e2e3;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --vp-c-bg: #1b1b1f;
+        --vp-c-bg-soft: #202127;
+        --vp-c-bg-mute: #2e2e32;
+        --vp-c-text-1: #fffff5;
+        --vp-c-text-2: #ebebf599;
+        --vp-c-text-3: #ebebf560;
+        --vp-c-brand: #10b981;
+        --vp-c-brand-light: #34d399;
+        --vp-c-brand-dark: #059669;
+        --vp-c-border: #2e2e32;
+        --vp-c-divider: rgba(84, 84, 88, 0.48);
+        --vp-code-bg: #161618;
+        --vp-code-inline-bg: rgba(16, 185, 129, 0.15);
+        --vp-code-inline-fg: #34d399;
+        --copy-btn-bg: rgba(32, 33, 39, 0.85);
+        --copy-btn-fg: #ebebf599;
+        --copy-btn-border: #2e2e32;
+        --float-btn-bg: #202127;
+        --float-btn-fg: #34d399;
+        --float-btn-border: #2e2e32;
+      }
+    }
+    html[data-theme="dark"] {
+      --vp-c-bg: #1b1b1f;
+      --vp-c-bg-soft: #202127;
+      --vp-c-bg-mute: #2e2e32;
+      --vp-c-text-1: #fffff5;
+      --vp-c-text-2: #ebebf599;
+      --vp-c-text-3: #ebebf560;
+      --vp-c-brand: #10b981;
+      --vp-c-brand-light: #34d399;
+      --vp-c-brand-dark: #059669;
+      --vp-c-border: #2e2e32;
+      --vp-c-divider: rgba(84, 84, 88, 0.48);
+      --vp-code-bg: #161618;
+      --vp-code-inline-bg: rgba(16, 185, 129, 0.15);
+      --vp-code-inline-fg: #34d399;
+      --copy-btn-bg: rgba(32, 33, 39, 0.85);
+      --copy-btn-fg: #ebebf599;
+      --copy-btn-border: #2e2e32;
+      --float-btn-bg: #202127;
+      --float-btn-fg: #34d399;
+      --float-btn-border: #2e2e32;
+    }
+    html[data-theme="light"] {
+      --vp-c-bg: #ffffff;
+      --vp-c-bg-soft: #f6f6f7;
+      --vp-c-bg-mute: #f1f1f2;
+      --vp-c-text-1: #213547;
+      --vp-c-text-2: #476582;
+      --vp-c-text-3: #8a9ba8;
+      --vp-c-brand: #10b981;
+      --vp-c-brand-light: #34d399;
+      --vp-c-brand-dark: #059669;
+      --vp-c-border: #e2e2e3;
+      --vp-c-divider: rgba(60, 60, 67, 0.12);
+      --vp-code-bg: #f6f6f7;
+      --vp-code-inline-bg: rgba(16, 185, 129, 0.08);
+      --vp-code-inline-fg: #059669;
+      --copy-btn-bg: rgba(255, 255, 255, 0.85);
+      --copy-btn-fg: #476582;
+      --copy-btn-border: #e2e2e3;
+      --float-btn-bg: #ffffff;
+      --float-btn-fg: #10b981;
+      --float-btn-border: #e2e2e3;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: "Chinese Quote", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--vp-c-text-1);
+      background-color: var(--vp-c-bg-soft);
+      margin: 0;
+      padding: 40px 16px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .vp-container {
+      max-width: 880px;
+      margin: 0 auto;
+      background: var(--vp-c-bg);
+      border: 1px solid var(--vp-c-border);
+      border-radius: 12px;
+      padding: 48px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--vp-c-text-1);
+      font-weight: 600;
+      position: relative;
+    }
+    h1 {
+      font-size: 2.2em;
+      line-height: 1.25;
+      margin-bottom: 0.8em;
+      border-bottom: 1px solid var(--vp-c-divider);
+      padding-bottom: 0.3em;
+    }
+    h2 {
+      font-size: 1.5em;
+      line-height: 1.35;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+      border-bottom: 1px solid var(--vp-c-divider);
+      padding-bottom: 0.25em;
+    }
+    h3 {
+      font-size: 1.25em;
+      margin-top: 1.5em;
+    }
+    p {
+      margin: 1em 0;
+      color: var(--vp-c-text-1);
+    }
+    a {
+      color: var(--vp-c-brand);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    a:hover {
+      color: var(--vp-c-brand-dark);
+      text-decoration: underline;
+    }
+    .header-anchor {
+      margin-left: 0.3em;
+      font-size: 0.85em;
+      color: var(--vp-c-brand);
+      opacity: 0;
+      text-decoration: none !important;
+      transition: opacity 0.2s ease;
+      user-select: none;
+    }
+    h1:hover .header-anchor,
+    h2:hover .header-anchor,
+    h3:hover .header-anchor,
+    h4:hover .header-anchor {
+      opacity: 0.7;
+    }
+    .header-anchor:hover {
+      opacity: 1 !important;
+    }
+    blockquote {
+      margin: 1.2em 0;
+      padding: 0.8em 1.2em;
+      border-left: 4px solid var(--vp-c-brand);
+      background: var(--vp-c-bg-soft);
+      border-radius: 0 8px 8px 0;
+      color: var(--vp-c-text-2);
+    }
+    code {
+      background: var(--vp-code-inline-bg);
+      color: var(--vp-code-inline-fg);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-family: "JetBrains Mono", Consolas, Monaco, monospace;
+      font-size: 88%;
+    }
+    .code-wrapper {
+      position: relative;
+      margin: 1.2em 0;
+    }
+    .code-wrapper pre {
+      margin: 0;
+    }
+    pre {
+      background: var(--vp-code-bg);
+      border: 1px solid var(--vp-c-border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: transparent;
+      color: var(--vp-c-text-1);
+      padding: 0;
+      font-size: 90%;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      color: var(--copy-btn-fg);
+      background-color: var(--copy-btn-bg);
+      border: 1px solid var(--copy-btn-border);
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+    .code-wrapper:hover .copy-btn {
+      opacity: 1;
+    }
+    .copy-btn:hover {
+      color: var(--vp-c-brand);
+      border-color: var(--vp-c-brand);
+    }
+    .copy-btn.copied {
+      opacity: 1;
+      color: var(--vp-c-brand);
+      border-color: var(--vp-c-brand);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5em 0;
+    }
+    th, td {
+      border: 1px solid var(--vp-c-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    th {
+      background: var(--vp-c-bg-soft);
+      color: var(--vp-c-text-1);
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background: var(--vp-c-bg-mute);
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--vp-c-divider);
+      margin: 2.5em 0;
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-color: var(--float-btn-bg);
+      color: var(--float-btn-fg);
+      border: 1px solid var(--float-btn-border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      z-index: 100;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.08);
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--float-btn-bg);
+      color: var(--float-btn-fg);
+      border: 1px solid var(--float-btn-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+      z-index: 100;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .back-to-top:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+      }
+      .vp-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        background: #ffffff !important;
+      }
+      .copy-btn, .back-to-top, .header-anchor, .theme-toggle {
+        display: none !important;
+      }
+      pre, code {
+        background: #f5f5f5 !important;
+        color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="vp-container">
+    {{ .Body }}
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Theme Toggle Logic
+      var savedTheme = localStorage.getItem("mdp-theme");
+      if (savedTheme) {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      }
+      function isDarkMode() {
+        var current = document.documentElement.getAttribute("data-theme");
+        if (current) return current === "dark";
+        return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      }
+      var toggleBtn = document.createElement("button");
+      toggleBtn.className = "theme-toggle";
+      toggleBtn.type = "button";
+      toggleBtn.setAttribute("aria-label", "Toggle dark/light mode");
+      function updateToggleIcon() {
+        toggleBtn.innerHTML = isDarkMode()
+          ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>'
+          : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+      }
+      updateToggleIcon();
+      toggleBtn.addEventListener("click", function() {
+        var next = isDarkMode() ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("mdp-theme", next);
+        updateToggleIcon();
+      });
+      document.body.appendChild(toggleBtn);
+
+      function normalize(str) {
+        return (str || "").toLowerCase().replace(/[\s\-_:：、，,.。（）()\[\]【】/\\#]/g, "");
+      }
+      function resolveAnchor(targetId) {
+        if (!targetId) return;
+        var decoded = decodeURIComponent(targetId.replace(/^#/, ""));
+        var el = document.getElementById(decoded);
+        if (!el) {
+          try { el = document.querySelector('[name="' + CSS.escape(decoded) + '"]'); } catch(e) {}
+        }
+        if (!el) {
+          var targetNorm = normalize(decoded);
+          var headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6, a[name], [id]");
+          for (var i = 0; i < headings.length; i++) {
+            var h = headings[i];
+            var hNorm = normalize(h.id || h.getAttribute("name") || h.textContent);
+            if (hNorm === targetNorm) { el = h; break; }
+          }
+        }
+        if (el) { el.scrollIntoView({ behavior: "smooth" }); }
+      }
+      if (window.location.hash) {
+        setTimeout(function() { resolveAnchor(window.location.hash); }, 100);
+      }
+      document.addEventListener("click", function(e) {
+        var a = e.target.closest("a");
+        if (a && a.getAttribute("href") && a.getAttribute("href").indexOf("#") === 0) {
+          var href = a.getAttribute("href");
+          e.preventDefault();
+          history.pushState(null, null, href);
+          resolveAnchor(href);
+        }
+      });
+
+      // Code copy button
+      document.querySelectorAll("pre").forEach(function(pre) {
+        var wrapper = document.createElement("div");
+        wrapper.className = "code-wrapper";
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
+        var btn = document.createElement("button");
+        btn.className = "copy-btn";
+        btn.type = "button";
+        btn.setAttribute("aria-label", "Copy code");
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+
+        btn.addEventListener("click", function() {
+          var codeEl = pre.querySelector("code") || pre;
+          navigator.clipboard.writeText(codeEl.innerText).then(function() {
+            btn.classList.add("copied");
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied!</span>';
+            setTimeout(function() {
+              btn.classList.remove("copied");
+              btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+            }, 2000);
+          });
+        });
+        wrapper.appendChild(btn);
+      });
+
+      // Header anchor hover
+      document.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function(h) {
+        if (h.id) {
+          var a = document.createElement("a");
+          a.className = "header-anchor";
+          a.href = "#" + h.id;
+          a.setAttribute("aria-hidden", "true");
+          a.textContent = "#";
+          h.appendChild(a);
+        }
+      });
+
+      // Back to top
+      var topBtn = document.createElement("button");
+      topBtn.className = "back-to-top";
+      topBtn.type = "button";
+      topBtn.setAttribute("aria-label", "Back to top");
+      topBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>';
+      topBtn.addEventListener("click", function() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      document.body.appendChild(topBtn);
+
+      window.addEventListener("scroll", function() {
+        if (window.scrollY > 300) {
+          topBtn.classList.add("visible");
+        } else {
+          topBtn.classList.remove("visible");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

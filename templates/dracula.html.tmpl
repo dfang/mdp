@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Title }}</title>
+  <style>
+    :root {
+      --bg: #282a36;
+      --current-line: #44475a;
+      --fg: #f8f8f2;
+      --comment: #6272a4;
+      --cyan: #8be9fd;
+      --green: #50fa7b;
+      --orange: #ffb86c;
+      --pink: #ff79c6;
+      --purple: #bd93f9;
+      --red: #ff5555;
+      --yellow: #f1fa8c;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--fg);
+      background-color: var(--bg);
+      margin: 0;
+      padding: 40px 16px;
+    }
+    .dracula-container {
+      max-width: 880px;
+      margin: 0 auto;
+      background: #21222c;
+      border: 1px solid var(--current-line);
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+      position: relative;
+    }
+    h1 {
+      color: var(--purple);
+      font-size: 2.2em;
+      border-bottom: 2px solid var(--current-line);
+      padding-bottom: 0.3em;
+    }
+    h2 {
+      color: var(--pink);
+      font-size: 1.6em;
+      border-bottom: 1px solid var(--current-line);
+      padding-bottom: 0.25em;
+      margin-top: 1.6em;
+    }
+    h3 {
+      color: var(--cyan);
+      font-size: 1.3em;
+    }
+    h4 {
+      color: var(--yellow);
+      font-size: 1.1em;
+    }
+    p {
+      margin: 0.8em 0;
+    }
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    a:hover {
+      color: var(--green);
+      text-decoration: underline;
+    }
+    .header-anchor {
+      margin-left: 0.3em;
+      font-size: 0.85em;
+      color: var(--comment);
+      opacity: 0;
+      text-decoration: none !important;
+      transition: opacity 0.2s ease;
+      user-select: none;
+    }
+    h1:hover .header-anchor,
+    h2:hover .header-anchor,
+    h3:hover .header-anchor,
+    h4:hover .header-anchor {
+      opacity: 0.7;
+    }
+    .header-anchor:hover {
+      opacity: 1 !important;
+      color: var(--green);
+    }
+    blockquote {
+      border-left: 4px solid var(--purple);
+      background: rgba(68, 71, 90, 0.4);
+      margin: 1.2em 0;
+      padding: 0.8em 1.2em;
+      border-radius: 0 8px 8px 0;
+      color: var(--comment);
+    }
+    blockquote p {
+      color: var(--fg);
+    }
+    code {
+      background: var(--current-line);
+      color: var(--green);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-family: "Fira Code", Consolas, Monaco, monospace;
+      font-size: 88%;
+    }
+    .code-wrapper {
+      position: relative;
+      margin: 1.2em 0;
+    }
+    .code-wrapper pre {
+      margin: 0;
+    }
+    pre {
+      background: #191a21;
+      border: 1px solid var(--current-line);
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: transparent;
+      color: var(--fg);
+      padding: 0;
+      font-size: 90%;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      color: var(--comment);
+      background-color: rgba(40, 42, 54, 0.85);
+      border: 1px solid var(--current-line);
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+    .code-wrapper:hover .copy-btn {
+      opacity: 1;
+    }
+    .copy-btn:hover {
+      color: var(--fg);
+      background-color: var(--current-line);
+    }
+    .copy-btn.copied {
+      opacity: 1;
+      color: var(--green);
+      border-color: var(--green);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5em 0;
+    }
+    th, td {
+      border: 1px solid var(--current-line);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    th {
+      background: var(--current-line);
+      color: var(--orange);
+    }
+    tr:nth-child(even) {
+      background: rgba(68, 71, 90, 0.2);
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--current-line);
+      margin: 2em 0;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #21222c;
+      color: var(--purple);
+      border: 1px solid var(--current-line);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+      z-index: 100;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .back-to-top:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      color: var(--pink);
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+      }
+      .dracula-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        background: #ffffff !important;
+      }
+      .copy-btn, .back-to-top, .header-anchor {
+        display: none !important;
+      }
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+      }
+      pre, code {
+        background: #f5f5f5 !important;
+        color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dracula-container">
+    {{ .Body }}
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      function normalize(str) {
+        return (str || "").toLowerCase().replace(/[\s\-_:：、，,.。（）()\[\]【】/\\#]/g, "");
+      }
+      function resolveAnchor(targetId) {
+        if (!targetId) return;
+        var decoded = decodeURIComponent(targetId.replace(/^#/, ""));
+        var el = document.getElementById(decoded);
+        if (!el) {
+          try { el = document.querySelector('[name="' + CSS.escape(decoded) + '"]'); } catch(e) {}
+        }
+        if (!el) {
+          var targetNorm = normalize(decoded);
+          var headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6, a[name], [id]");
+          for (var i = 0; i < headings.length; i++) {
+            var h = headings[i];
+            var hNorm = normalize(h.id || h.getAttribute("name") || h.textContent);
+            if (hNorm === targetNorm) { el = h; break; }
+          }
+        }
+        if (el) { el.scrollIntoView({ behavior: "smooth" }); }
+      }
+      if (window.location.hash) {
+        setTimeout(function() { resolveAnchor(window.location.hash); }, 100);
+      }
+      document.addEventListener("click", function(e) {
+        var a = e.target.closest("a");
+        if (a && a.getAttribute("href") && a.getAttribute("href").indexOf("#") === 0) {
+          var href = a.getAttribute("href");
+          e.preventDefault();
+          history.pushState(null, null, href);
+          resolveAnchor(href);
+        }
+      });
+
+      // Code copy button
+      document.querySelectorAll("pre").forEach(function(pre) {
+        var wrapper = document.createElement("div");
+        wrapper.className = "code-wrapper";
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
+        var btn = document.createElement("button");
+        btn.className = "copy-btn";
+        btn.type = "button";
+        btn.setAttribute("aria-label", "Copy code");
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+
+        btn.addEventListener("click", function() {
+          var codeEl = pre.querySelector("code") || pre;
+          navigator.clipboard.writeText(codeEl.innerText).then(function() {
+            btn.classList.add("copied");
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied!</span>';
+            setTimeout(function() {
+              btn.classList.remove("copied");
+              btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>Copy</span>';
+            }, 2000);
+          });
+        });
+        wrapper.appendChild(btn);
+      });
+
+      // Header anchor hover
+      document.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function(h) {
+        if (h.id) {
+          var a = document.createElement("a");
+          a.className = "header-anchor";
+          a.href = "#" + h.id;
+          a.setAttribute("aria-hidden", "true");
+          a.textContent = "#";
+          h.appendChild(a);
+        }
+      });
+
+      // Back to top
+      var topBtn = document.createElement("button");
+      topBtn.className = "back-to-top";
+      topBtn.type = "button";
+      topBtn.setAttribute("aria-label", "Back to top");
+      topBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>';
+      topBtn.addEventListener("click", function() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      document.body.appendChild(topBtn);
+
+      window.addEventListener("scroll", function() {
+        if (window.scrollY > 300) {
+          topBtn.classList.add("visible");
+        } else {
+          topBtn.classList.remove("visible");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

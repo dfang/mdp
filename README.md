@@ -1,78 +1,118 @@
 <h1 align="center">mdp (Markdown Preview)</h1>
 
-*<p align="center">A Markdown Preview CLI Tool Built in Go</p>*
-
+*<p align="center">A Fast, Beautiful Markdown Preview CLI Tool Built in Go</p>*
 
 ## About
 
-Use the `mdp` CLI tool to preview a Markdown file in the browser.
+`mdp` is a lightweight, cross-platform CLI tool that converts Markdown files into standalone, beautifully styled HTML pages and opens them instantly in your default browser.
 
+### Features
 
-### Features:
+- 🚀 **Zero Configuration & Single Binary**: All templates are embedded via Go `embed`, no external template files required.
+- 🎨 **9 Curated Built-in Themes**: From GitHub and Notion to Dracula and Nord.
+- 🌓 **Dark / Light Mode Support**: Dual-mode themes include a floating ☀️/🌙 toggle button, system preference auto-detection, and local storage state persistence.
+- 📋 **One-Click Code Copy**: Built-in copy buttons with instant feedback for code blocks.
+- ⚓ **Universal Anchor Navigation**: Smooth scroll and automatic header ID resolution for English, Chinese, and complex anchors.
+- 🔝 **Back to Top Button**: Floating scroll-to-top button for easy reading of long documents.
+- 🖨️ **Print / PDF Optimization**: Clean print stylesheets (`@media print`) for exporting crisp PDFs via `Cmd + P`.
+- 🔒 **HTML Sanitization**: Powered by [bluemonday](https://github.com/microcosm-cc/bluemonday) for secure output.
+- 💻 **Cross-Platform**: Linux, macOS, and Windows.
 
-- Cross platform:  Linux / Macos / Windows.
-
-- Convert a Markdown file into an HTML file.
-
-- Support custom templates.
-
-- `mdp` uses [bluemonday](https://github.com/microcosm-cc/bluemonday) to sanitize the Markdown content creating a safe HTML file.
+---
 
 ## Installation
 
-### Requirements:
+### Requirements
+- [Go](https://go.dev/) (1.18 or higher)
 
-- [Go](https://go.dev/)
+### Install via `go install`:
+```bash
+go install github.com/dfang/mdp@latest
+```
 
-### How to install:
-
-- Run: 
-
-  ```
-  $ go install github.com/dfang/mdp@latest
-  ```
+---
 
 ## Usage
 
-### Options:
-
-```
-$ mdp
+```text
 Usage: mdp [options] <markdown_file>
+       mdp templates
 
 Options:
+  -l, -list
+        List available built-in templates with descriptions
+  -r, -random
+        Use a random built-in template
   -t string
-        Alternate template name
+        Alternate template name or custom template file
 ```
 
-### Examples:
+---
 
-#### Preview a Markdown file in the browser:
+## Built-in Templates
 
+Use `mdp templates` or `mdp -l` to list all available templates:
+
+| Template Name | Dark/Light Mode | Style Description |
+| :--- | :---: | :--- |
+| `academic` | Light | Academic paper style with serif typography and centered title |
+| `dark_modern` | Dark | Futuristic dark glassmorphic UI with neon gradient glows |
+| `dracula` | Dark | Iconic Dracula dark theme with purple, pink, and cyan accents |
+| `github` | ☀️/🌙 Dual | GitHub Markdown style with auto/manual light & dark mode |
+| `newsprint` | Light | Warm ivory newsprint / editorial paper reading style |
+| `nord` | ☀️/🌙 Dual | Arctic bluish-gray Nord theme with light & dark mode |
+| `notion` | ☀️/🌙 Dual | Notion minimalistic notebook style with light & dark mode |
+| `solarized_dark`| ☀️/🌙 Dual | Classic Solarized palette with light & dark mode |
+| `vitepress` | ☀️/🌙 Dual | VitePress / Vue modern tech docs style with light & dark mode |
+
+---
+
+## Examples
+
+### 1. Preview a Markdown file:
+```bash
+mdp README.md
 ```
-$ mdp MyFile.md
+
+### 2. List available templates with style descriptions:
+```bash
+mdp templates
+# or
+mdp -l
 ```
 
-#### Use a custom template file to generate the HTML:
-
-A custom template file may be used to provide custom styles and layouts. 
-
-`mdp` accepts a Go [html/template](https://pkg.go.dev/html/template) file provided using the `-t` flag.
-
+### 3. Preview with a specific built-in template:
+```bash
+mdp -t github README.md
+mdp -t vitepress README.md
+mdp -t nord README.md
+mdp -t notion README.md
 ```
-$ mdp -t template.tmpl MyFile.md
+
+### 4. Preview with a random template:
+```bash
+mdp -r README.md
 ```
-The content of the markdown file must be defined in the template file inside de `<body>` tags as `{{ .Body }}`.
 
-  Ex.: `custom.tmpl`
+### 5. Use a custom Go template file:
+A custom Go `html/template` file may be used to provide your own styles:
 
-  ```
-  ...
-    </head>
-    <body>
+```bash
+mdp -t custom.tmpl README.md
+```
+
+The template must render the content inside the `<body>` tags as `{{ .Body }}`:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ .Title }}</title>
+  </head>
+  <body>
+    <article>
       {{ .Body }}
-    </body>
-    <footer>
-      <p>© 2022</p>
-    </footer>
-  ```
+    </article>
+  </body>
+</html>
+```
