@@ -8,11 +8,14 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
 )
+
+var idRegex = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Pd}\p{Pc}_.:-]+$`)
 
 const (
 	defaultTemplate = `<!DOCTYPE html>
@@ -20,9 +23,61 @@ const (
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>{{ .Title }}</title>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+    </style>
   </head>
   <body>
   {{ .Body }}
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      function normalize(str) {
+        return (str || "").toLowerCase().replace(/[\s\-_:：、，,.。（）()\[\]【】/\\#]/g, "");
+      }
+
+      function resolveAnchor(targetId) {
+        if (!targetId) return;
+        var decoded = decodeURIComponent(targetId.replace(/^#/, ""));
+        var el = document.getElementById(decoded);
+        if (!el) {
+          try {
+            el = document.querySelector('[name="' + CSS.escape(decoded) + '"]');
+          } catch(e) {}
+        }
+        if (!el) {
+          var targetNorm = normalize(decoded);
+          var headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6, a[name], [id]");
+          for (var i = 0; i < headings.length; i++) {
+            var h = headings[i];
+            var hNorm = normalize(h.id || h.getAttribute("name") || h.textContent);
+            if (hNorm === targetNorm) {
+              el = h;
+              break;
+            }
+          }
+        }
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+
+      if (window.location.hash) {
+        setTimeout(function() { resolveAnchor(window.location.hash); }, 100);
+      }
+
+      document.addEventListener("click", function(e) {
+        var a = e.target.closest("a");
+        if (a && a.getAttribute("href") && a.getAttribute("href").indexOf("#") === 0) {
+          var href = a.getAttribute("href");
+          e.preventDefault();
+          history.pushState(null, null, href);
+          resolveAnchor(href);
+        }
+      });
+    });
+  </script>
   </body>
 </html>
 `
@@ -84,8 +139,11 @@ func run(filename, tFname string, out io.Writer) error {
 }
 
 func parseContent(input []byte, tFname string) ([]byte, error) {
-	output := blackfriday.Run(input)
-	body := bluemonday.UGCPolicy().SanitizeBytes(output)
+	output := blackfriday.Run(input, blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.AutoHeadingIDs))
+
+	policy := bluemonday.UGCPolicy()
+	policy.AllowAttrs("id").Matching(idRegex).OnElements("h1", "h2", "h3", "h4", "h5", "h6", "a")
+	body := policy.SanitizeBytes(output)
 
 	t, err := template.New("mdp").Parse(defaultTemplate)
 	if err != nil {
