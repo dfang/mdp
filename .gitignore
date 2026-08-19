@@ -13,4 +13,5 @@ tmp/
 bin/
 dist/
 .agents/
-
+.worktrees/
+worktrees/
