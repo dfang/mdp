@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"time"
 	"unicode"
@@ -33,6 +34,29 @@ var (
 	commit  = "none"
 	date    = "unknown"
 )
+
+func init() {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		if version == "dev" && info.Main.Version != "" && info.Main.Version != "(devel)" {
+			version = info.Main.Version
+		}
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				if commit == "none" {
+					commit = setting.Value
+					if len(commit) > 7 {
+						commit = commit[:7]
+					}
+				}
+			case "vcs.time":
+				if date == "unknown" {
+					date = setting.Value
+				}
+			}
+		}
+	}
+}
 
 var idRegex = regexp.MustCompile(`^[\p{L}\p{N}\p{M}\p{Pd}\p{Pc}_.:-]+$`)
 

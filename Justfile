@@ -1,10 +1,15 @@
+version := `git describe --tags --always --dirty 2>/dev/null || echo "dev"`
+commit := `git rev-parse --short HEAD 2>/dev/null || echo "none"`
+date := `date -u +%Y-%m-%d`
+ldflags := "-s -w -X main.version=" + version + " -X main.commit=" + commit + " -X main.date=" + date
+
 # List available recipes
 default:
     @just --list
 
 # Build mdp binary
 build:
-    go build -o bin/mdp .
+    go build -ldflags '{{ldflags}}' -o bin/mdp .
 
 # Run mdp with arguments (e.g. `just run README.md`)
 run *args:
@@ -24,7 +29,7 @@ vet:
 
 # Install binary to GOPATH/bin
 install:
-    go install .
+    go install -ldflags '{{ldflags}}' .
 
 # Generate CHANGELOG.md using git-cliff
 changelog:
