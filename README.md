@@ -2,6 +2,11 @@
 
 *<p align="center">A Fast, Beautiful Markdown Preview CLI Tool Built in Go</p>*
 
+<p align="center">
+  <a href="README.md">English</a> •
+  <a href="README_zh.md">简体中文</a>
+</p>
+
 ## About
 
 `mdp` is a lightweight, cross-platform CLI tool that converts Markdown files into standalone, beautifully styled HTML pages and opens them instantly in your default browser.
