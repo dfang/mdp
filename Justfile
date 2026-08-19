@@ -29,6 +29,7 @@ vet:
 
 # Install binary to GOPATH/bin
 install:
+    echo "install to $GOBIN"
     go install -ldflags '{{ldflags}}' .
 
 # Generate CHANGELOG.md using git-cliff
