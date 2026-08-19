@@ -1,3 +1,20 @@
+## [0.0.4] - 2026-08-19
+
+### 🚀 Features
+
+- Migrate markdown parser from blackfriday to goldmark
+
+### 🐛 Bug Fixes
+
+- Inject version and commit via ldflags in Justfile and runtime/debug fallback
+
+### 📚 Documentation
+
+- Update CHANGELOG.md for v0.0.4
+
+### ⚙️ Miscellaneous Tasks
+
+- Ignore worktree directories in .gitignore
 ## [0.0.3] - 2026-08-19
 
 ### 🐛 Bug Fixes
